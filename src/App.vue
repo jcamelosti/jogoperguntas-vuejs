@@ -1,18 +1,38 @@
 <template>
-  <div>
-    <template v-if="this.answers">
 
-      <h1 v-html="this.question"></h1>
-  
-      <template v-for="(answer, index) in this.answers" v-bind:key="index">
-        <input type="radio" name="options" value="True" />
-        <label v-html="answer"></label><br />
-      </template>
-  
-      <button class="send" type="button">Send</button>
+  <section class="score">
+    Jogador <span>{{ this.win_count }}</span> x 
+   <span>{{ this.lose_count }}</span> Computador
+  </section>
 
+  <template v-if="this.question">
+    <h1 v-html="this.question">
+    </h1>
+
+    <template v-for="(answer, index) in this.answers" v-bind:key="index">
+      <input 
+        :disabled="this.answerSubmitted" 
+        type="radio" name="options" 
+        :value="answer" 
+        v-model="this.chosen_answer">
+        
+      <label v-html="answer"></label><br>
     </template>
-  </div>
+
+    <button v-if="!this.answerSubmitted" @click="this.submitAnswer()" class="send" type="button">Confirmar</button>
+
+  </template>
+  
+  <section class="result" v-if="this.answerSubmitted">
+    <template v-if="this.chosen_answer == this.correctAnswer">
+      <h4>&#9989; Parabéns, a resposta "{{this.correctAnswer}}" está correta.</h4>
+    </template>
+    <template v-else>
+      <h4>&#10060;  Que pena, a resposta está errada. A resposta correta é "{{this.correctAnswer}}".</h4>
+    </template>
+    <button @click="this.getNewQuestion()" class="send" type="button">Próxima pergunta</button>
+  </section>
+
 </template>
 
 <script>
@@ -24,6 +44,8 @@ export default {
       question: undefined,
       incorrectAnswer: undefined,
       correctAnswer: undefined,
+      chosen_answer: undefined,
+      answerSubmitted: false,
     }
   },  
   computed: {
@@ -34,12 +56,34 @@ export default {
     }
   },
   created(){
-    this.axios.get('https://opentdb.com/api.php?amount=1&category=18')
-    .then((response) => {
-      this.question = response.data.results[0].question;
-      this.incorrectAnswer = response.data.results[0].incorrect_answers;
-      this.correctAnswer = response.data.results[0].correct_answer;
-    })
+    this.getNewQuestion()
+  },
+  methods:{
+    submitAnswer(){
+      if(!this.chosen_answer){
+        alert('Pick one of the option');
+      }else{
+        this.answerSubmitted = true;
+        if(this.chosen_answer == this.correctAnswer){
+          console.log('acertou');
+        }else{
+          console.log('errou')
+        }
+      }
+    },
+
+    getNewQuestion(){
+      this.answerSubmitted = false;
+      this.chosen_answer = undefined;
+      this.question = undefined;
+
+      this.axios.get('https://opentdb.com/api.php?amount=1&category=18')
+      .then((response) => {
+        this.question = response.data.results[0].question;
+        this.incorrectAnswer = response.data.results[0].incorrect_answers;
+        this.correctAnswer = response.data.results[0].correct_answer;
+      })
+    }
   }
 }
 </script>
