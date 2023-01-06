@@ -1,20 +1,24 @@
 <template>
   <div>
-    <h1 v-html="this.question"></h1>
+    <template v-if="this.answers">
 
-    <input type="radio" name="options" value="True" />
-    <label>True</label><br />
+      <h1 v-html="this.question"></h1>
+  
+      <template v-for="(answer, index) in this.answers" v-bind:key="index">
+        <input type="radio" name="options" value="True" />
+        <label v-html="answer"></label><br />
+      </template>
+  
+      <button class="send" type="button">Send</button>
 
-    <input type="radio" name="options" value="True" />
-    <label>True</label><br />
-
-    <button class="send" type="button">Send</button>
+    </template>
   </div>
 </template>
 
 <script>
 export default {
   name: 'App',
+  components:[],
   data(){
     return {
       question: undefined,
@@ -22,6 +26,13 @@ export default {
       correctAnswer: undefined,
     }
   },  
+  computed: {
+    answers(){
+      let answers = JSON.parse(JSON.stringify(this.incorrectAnswer));
+      answers.splice(Math.round( Math.random() * answers.length),0,this.correctAnswer);
+      return answers;
+    }
+  },
   created(){
     this.axios.get('https://opentdb.com/api.php?amount=1&category=18')
     .then((response) => {
